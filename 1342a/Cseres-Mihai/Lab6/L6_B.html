@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>L6_B – Paragrafe interschimbabile</title>
+    <style>
+        #p1 {
+            color: darkblue;
+            background-color: lightyellow;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 10px;
+        }
+        #p2 {
+            color: darkred;
+            background-color: lightblue;
+            font-style: italic;
+            font-family: "Courier New", monospace;
+            padding: 10px;
+        }
+        p { cursor: pointer; }
+    </style>
+</head>
+<body>
+    <button id="buton">Schimbă paragrafele între ele</button>
+
+    <p id="p1">Acesta este primul paragraf.</p>
+    <p id="p2">Acesta este al doilea paragraf</p>
+
+    <script>
+    var p1 = document.getElementById("p1");
+    var p2 = document.getElementById("p2");
+    var buton = document.getElementById("buton");
+
+    // Aceeași funcție pentru ambele paragrafe: "this" este paragraful apăsat
+    function schimbaText() {
+        var text = prompt("Introduceți noul text al paragrafului:", this.innerHTML);
+        if (text !== null && text !== "") {
+            this.innerHTML = text;
+        }
+    }
+
+    p1.onclick = schimbaText;
+    p2.onclick = schimbaText;
+
+    // La apăsarea butonului, conținuturile se schimbă între ele
+    buton.onclick = function () {
+        var aux = p1.innerHTML;
+        p1.innerHTML = p2.innerHTML;
+        p2.innerHTML = aux;
+    };
+    </script>
+</body>
+</html>

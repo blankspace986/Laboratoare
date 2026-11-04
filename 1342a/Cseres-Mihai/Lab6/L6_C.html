@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>L6_C – Culori cerute prin prompt</title>
+    <style>
+        h1, p { cursor: pointer; }
+        p { padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1 id="titlu">Culori schimbate prin JavaScript</h1>
+
+    <p id="par">Prima linie a paragrafului.<br>
+    A doua linie a paragrafului.<br>
+    A treia linie a paragrafului.</p>
+
+    <script>
+    var titlu = document.getElementById("titlu");
+    var par = document.getElementById("par");
+
+    // Cere o culoare și o întoarce dacă e validă; altfel întoarce null
+    function cereCuloare(mesaj) {
+        var c = prompt(mesaj, "");
+        if (c === null) {           // Cancel: nu facem nimic, fără alertă
+            return null;
+        }
+        c = c.trim();               // eliminăm spațiile de la capete
+        if (CSS.supports("color", c)) {
+            return c;
+        }
+        alert("Culoarea „" + c + "” nu este corectă!");
+        return null;
+    }
+
+    // Clic pe titlu: se schimbă culoarea textului
+    titlu.onclick = function () {
+        var c = cereCuloare("Introduceți culoarea textului titlului (ex: red, #ff0000, rgb(255,0,0)):");
+        if (c !== null) {
+            this.style.color = c;
+        }
+    };
+
+    // Clic pe paragraf: se schimbă culoarea de fundal
+    par.onclick = function () {
+        var c = cereCuloare("Introduceți culoarea de fundal a paragrafului:");
+        if (c !== null) {
+            this.style.backgroundColor = c;
+        }
+    };
+    </script>
+</body>
+</html>
