@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Tabel masini</title>
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+</style>
+</head>
+<body>
+<h1> Masinile dorite </h1>
+
+<form onsubmit="return adaugaMasina()">
+  <input id="marca" placeholder="Marca" required>
+  <input id="model" placeholder="Model" required>
+  <input id="culoare" placeholder="Culoare" required>
+  <input id="anFab" type="number" placeholder="An fabricatie" required>
+  <button type="submit">Adauga masina</button>
+</form>
+<button onclick="stergeToate()">Sterge toate</button>
+<p id="mesaj"></p>          <!-- aici apar mesajele de eroare -->
+
+<table>
+  <thead>
+    <tr>
+      <th>Marca</th> <th>Model</th> <th>Culoare</th> <th>An fabricatie</th>
+    </tr>
+  </thead>
+  <tbody id="tm"></tbody>   <!-- aici se adauga randurile masinilor -->
+</table>
+
+<script>
+function masina(mk, md, cl, an) {
+  this.marca = mk;
+  this.model = md;
+  this.culoare = cl;
+  this.anFab = an;
+}
+
+// metoda definita o singura data, pentru toate obiectele masina;
+// JSON.stringify nu o vede, pentru ca nu este o proprietate a obiectului
+masina.prototype.randNou = function() {
+  return "<tr><td>" + this.marca + "</td><td>" + this.model +
+    "</td><td>" + this.culoare + "</td><td>" + this.anFab + "</td></tr>";
+};
+
+const masini2Store = [];
+if (localStorage.carsData) {
+  var masiniStored = JSON.parse(localStorage.carsData);   // obiecte simple, doar date
+  for (var i = 0; i < masiniStored.length; i++) {
+    var d = masiniStored[i];
+    var m = new masina(d.marca, d.model, d.culoare, d.anFab);   // din nou obiect masina
+    document.getElementById("tm").innerHTML += m.randNou();     // metoda, cu paranteze
+    masini2Store.push(m);
+  }
+}
+
+function valideaza(marca, model, culoare, an) {
+  if (marca === "" || model === "" || culoare === "") {
+    return "Completati marca, modelul si culoarea.";
+  }
+  var anCurent = new Date().getFullYear();
+  if (!Number.isInteger(an) || an < 1900 || an > anCurent) {
+    return "Anul de fabricatie trebuie sa fie intre 1900 si " + anCurent + ".";
+  }
+  return "";
+}
+
+// citeste formularul; intoarce obiectul masina sau null (si afiseaza eroarea)
+function citesteFormular() {
+  var marca = document.getElementById("marca").value.trim();
+  var model = document.getElementById("model").value.trim();
+  var culoare = document.getElementById("culoare").value.trim();
+  var an = Number(document.getElementById("anFab").value);
+  var eroare = valideaza(marca, model, culoare, an);
+  document.getElementById("mesaj").innerHTML = eroare;
+  if (eroare !== "") {
+    return null;
+  }
+  return new masina(marca, model, culoare, an);
+}
+
+function adaugaMasina() {
+  var mNoua = citesteFormular();
+  if (mNoua !== null) {
+    document.getElementById("tm").innerHTML += mNoua.randNou();
+    masini2Store.push(mNoua);
+    localStorage.setItem("carsData", JSON.stringify(masini2Store));   // doar datele
+  }
+  return false;     // formularul nu reincarca pagina
+}
+
+function stergeToate() {
+  document.getElementById("tm").innerHTML = "";   // goleste randurile, capul tabelului ramane
+  masini2Store.length = 0;                        // goleste tabloul
+  localStorage.removeItem("carsData");
+  document.getElementById("mesaj").innerHTML = "";
+}
+</script>
+
+<!--
+Exercitiul bonus
+
+- In carsData se pastreaza doar datele, de exemplu:
+  [{"marca":"Dacia","model":"Logan","culoare":"alb","anFab":2020}]
+  Metoda randNou este pe masina.prototype, nu in obiect, deci JSON.stringify nu o vede
+  si nu mai e nevoie de linia mNoua.randNou = mNoua.randNou().toString().
+
+- La incarcare, JSON.parse da obiecte simple; fiecare este transformat cu new masina(...)
+  intr-un obiect masina, care are din nou metoda randNou() prin prototype.
+
+- Daca se schimba forma randului (de exemplu se adauga o coloana): in L8_C randurile vechi
+  au fost salvate ca text, deci raman cu forma veche. In L8_D randul se construieste la
+  fiecare incarcare din date, cu metoda actuala, deci toate masinile, si cele vechi,
+  apar cu forma noua.
+
+- "Sterge toate" foloseste removeItem("carsData"), nu localStorage.clear(), ca sa nu
+  stearga si cheile celorlalte laboratoare de pe acelasi site.
+-->
+</body>
+</html>

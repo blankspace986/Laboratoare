@@ -17,58 +17,103 @@ td, th {
 </style>
 </head>
 <body>
-<h1 > Masinile dorite </h1>
+<h1> Masinile dorite </h1>
 
-<p>
-<button onclick="adaugaMasina()";> Adauga masina</button>
+<form onsubmit="return adaugaMasina()">
+  <input id="marca" placeholder="Marca" required>
+  <input id="model" placeholder="Model" required>
+  <input id="culoare" placeholder="Culoare" required>
+  <input id="anFab" type="number" placeholder="An fabricatie" required>
+  <button type="submit">Adauga masina</button>
+</form>
+<p id="mesaj"></p>          <!-- aici apar mesajele de eroare -->
+
 <table id="tm">
-<tr>
-    <th>Marca</th>
-    <th>Model</th>
-    <th>Culoare</th>
+  <tr>
+    <th>Marca</th> <th>Model</th> <th>Culoare</th> <th>An fabricatie</th>
   </tr>
-  
 </table>
-</p>
+
 <script>
-var m1 = new masina("Opel", "Zafira", "gri");
-var m2 = new masina("Seat", "Ibiza", "roz");
+var m1 = new masina("Opel", "Zafira", "gri", 2015);
+var m2 = new masina("Seat", "Ibiza", "roz", 2018);
+document.getElementById("tm").innerHTML += m1.randNou();
+document.getElementById("tm").innerHTML += m2.randNou();
 
-document.getElementById("tm").innerHTML += m1.randNou(); 
-
-document.getElementById("tm").innerHTML +=  m2.randNou(); 
-if(localStorage.masinaN) {
-var masinaJSON = localStorage.masinaN;
-var mNoua = JSON.parse(masinaJSON);
-
-document.getElementById("tm").innerHTML += mNoua.randNou; // proprietate 
+if (localStorage.masinaN) {
+  var masinaJSON = localStorage.masinaN;
+  var mNoua = JSON.parse(masinaJSON);
+  document.getElementById("tm").innerHTML += mNoua.randNou;   // proprietate (text), nu metoda
 }
 
-
-
-function masina(mk, md, cl){
-this.marca= mk;
-this.model = md;
-this.culoare = cl;
-this.randNou = function() {return "<tr><td>" + this.marca +"</td><td>" + this.model + "</td><td>" + this.culoare + "</td></tr>"}
+function masina(mk, md, cl, an) {
+  this.marca = mk;
+  this.model = md;
+  this.culoare = cl;
+  this.anFab = an;
+  this.randNou = function() {return "<tr><td>" + this.marca + "</td><td>" + this.model +
+    "</td><td>" + this.culoare + "</td><td>" + this.anFab + "</td></tr>"};
 }
+
+function valideaza(marca, model, culoare, an) {
+  if (marca === "" || model === "" || culoare === "") {
+    return "Completati marca, modelul si culoarea.";
+  }
+  var anCurent = new Date().getFullYear();
+  if (!Number.isInteger(an) || an < 1900 || an > anCurent) {
+    return "Anul de fabricatie trebuie sa fie intre 1900 si " + anCurent + ".";
+  }
+  return "";
+}
+
+// citeste formularul; intoarce obiectul masina sau null (si afiseaza eroarea)
+function citesteFormular() {
+  var marca = document.getElementById("marca").value.trim();
+  var model = document.getElementById("model").value.trim();
+  var culoare = document.getElementById("culoare").value.trim();
+  var an = Number(document.getElementById("anFab").value);
+  var eroare = valideaza(marca, model, culoare, an);
+  document.getElementById("mesaj").innerHTML = eroare;
+  if (eroare !== "") {
+    return null;
+  }
+  return new masina(marca, model, culoare, an);
+}
+
 function adaugaMasina() {
-
-
-var marca= prompt("Marca:");
-var model= prompt("Model:");
-var culoare= prompt("Culoare:");
-var mNoua = new masina(marca, model, culoare);
-
-document.getElementById("tm").innerHTML +=  mNoua.randNou(); 
-
-mNoua.randNou = 	mNoua.randNou().toString();
-var myJSON = JSON.stringify(mNoua);
-
-localStorage.setItem("masinaN", myJSON);
-
-
+  var mNoua = citesteFormular();
+  if (mNoua !== null) {
+    document.getElementById("tm").innerHTML += mNoua.randNou();
+    mNoua.randNou = mNoua.randNou().toString();   // metoda -> text, ca sa ajunga in JSON
+    var myJSON = JSON.stringify(mNoua);
+    localStorage.setItem("masinaN", myJSON);
+  }
+  return false;     // formularul nu reincarca pagina
 }
 </script>
+
+<!--
+Exercitiul 4
+
+(a) Cheia masinaN contine textul JSON al ultimei masini adaugate, de exemplu:
+    {"marca":"Dacia","model":"Logan","culoare":"alb","randNou":"<tr><td>Dacia</td><td>Logan</td><td>alb</td></tr>"}
+    Adica datele masinii plus randul de tabel gata construit, ca text.
+
+(b) JSON.stringify omite functiile, deci fara aceasta linie metoda randNou nu ar ajunge
+    in JSON: masinaN ar contine doar marca, model si culoare. La reincarcare,
+    dupa JSON.parse, mNoua.randNou ar fi undefined, iar in pagina s-ar adauga textul
+    "undefined" in loc de randul masinii. Linia inlocuieste metoda cu rezultatul ei
+    (randul de tabel, care e text), iar textul este pastrat de JSON.
+    (.toString() e de fapt in plus, randNou() intoarce deja un string.)
+
+(c) JSON.parse intoarce un obiect simplu, nu un obiect de tip masina, deci nu are
+    metodele lui masina. Acolo randNou este o proprietate de tip text, nu o functie.
+    Cu paranteze, mNoua.randNou() ar da eroarea
+    "TypeError: mNoua.randNou is not a function".
+
+(d) Dupa reincarcare apare tot o singura masina adaugata (ultima), langa Opel si Seat,
+    la fel ca in L8_A. Fiecare adaugare suprascrie cheia masinaN. Diferenta fata de L8_A
+    este ca masina se salveaza intr-o singura cheie (ca obiect JSON), nu in trei chei separate.
+-->
 </body>
 </html>
