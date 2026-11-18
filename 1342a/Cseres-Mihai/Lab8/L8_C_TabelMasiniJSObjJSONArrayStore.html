@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Tabel masini</title>
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+</style>
+</head>
+<body>
+<h1> Masinile dorite </h1>
+
+<form onsubmit="return adaugaMasina()">
+  <input id="marca" placeholder="Marca" required>
+  <input id="model" placeholder="Model" required>
+  <input id="culoare" placeholder="Culoare" required>
+  <input id="anFab" type="number" placeholder="An fabricatie" required>
+  <button type="submit">Adauga masina</button>
+</form>
+<p id="mesaj"></p>          <!-- aici apar mesajele de eroare -->
+
+<table id="tm">
+  <tr>
+    <th>Marca</th> <th>Model</th> <th>Culoare</th> <th>An fabricatie</th>
+  </tr>
+</table>
+
+<script>
+const masini2Store = [];
+if (localStorage.carsArray) {
+  let arrayJSON = localStorage.carsArray;
+  var masiniStored = JSON.parse(arrayJSON);
+  for (var i = 0; i < masiniStored.length; i++) {
+    document.getElementById("tm").innerHTML += masiniStored[i].randNou;   // proprietate (text)
+    masini2Store.push(masiniStored[i]);
+  }
+}
+
+function masina(mk, md, cl, an) {
+  this.marca = mk;
+  this.model = md;
+  this.culoare = cl;
+  this.anFab = an;
+  this.randNou = function() {return "<tr><td>" + this.marca + "</td><td>" + this.model +
+    "</td><td>" + this.culoare + "</td><td>" + this.anFab + "</td></tr>"};
+}
+
+function valideaza(marca, model, culoare, an) {
+  if (marca === "" || model === "" || culoare === "") {
+    return "Completati marca, modelul si culoarea.";
+  }
+  var anCurent = new Date().getFullYear();
+  if (!Number.isInteger(an) || an < 1900 || an > anCurent) {
+    return "Anul de fabricatie trebuie sa fie intre 1900 si " + anCurent + ".";
+  }
+  return "";
+}
+
+// citeste formularul; intoarce obiectul masina sau null (si afiseaza eroarea)
+function citesteFormular() {
+  var marca = document.getElementById("marca").value.trim();
+  var model = document.getElementById("model").value.trim();
+  var culoare = document.getElementById("culoare").value.trim();
+  var an = Number(document.getElementById("anFab").value);
+  var eroare = valideaza(marca, model, culoare, an);
+  document.getElementById("mesaj").innerHTML = eroare;
+  if (eroare !== "") {
+    return null;
+  }
+  return new masina(marca, model, culoare, an);
+}
+
+function adaugaMasina() {
+  var mNoua = citesteFormular();
+  if (mNoua !== null) {
+    document.getElementById("tm").innerHTML += mNoua.randNou();
+    mNoua.randNou = mNoua.randNou().toString();   // metoda -> text, ca sa ajunga in JSON
+    masini2Store.push(mNoua);                     // adauga la sfarsitul tabloului
+    var myJSON = JSON.stringify(masini2Store);    // tot tabloul, nu doar masina noua
+    localStorage.setItem("carsArray", myJSON);
+  }
+  return false;     // formularul nu reincarca pagina
+}
+</script>
+
+<!--
+Exercitiul 6 - ce aduce nou L8_C fata de L8_B
+
+- Tabloul masini2Store: in L8_B se salva un singur obiect, deci fiecare masina noua o
+  suprascria pe cea dinainte. In L8_C toate masinile sunt tinute intr-un tablou, iar
+  fiecare masina noua este adaugata la sfarsit cu push.
+
+- Cheia carsArray: in Local Storage nu se mai salveaza o masina, ci tot tabloul,
+  transformat in JSON cu JSON.stringify(masini2Store), de exemplu:
+  [{"marca":"Dacia",...,"randNou":"<tr>...</tr>"},{"marca":"Skoda",...}]
+  La fiecare adaugare se rescrie cheia, dar cu tabloul complet, deci nu se pierde nimic.
+
+- Bucla de la incarcare: JSON.parse intoarce tabloul salvat. Pentru fiecare element,
+  bucla (1) adauga in tabel randul salvat (masiniStored[i].randNou, text, fara paranteze)
+  si (2) il pune inapoi in masini2Store. Fara pasul (2), tabloul ar porni gol, iar prima
+  masina adaugata dupa reincarcare ar suprascrie in carsArray toate masinile vechi.
+
+Rezultat: dupa reincarcare apar toate masinile adaugate, in ordinea adaugarii.
+(Spre deosebire de L8_A si L8_B, aici nu mai exista masinile fixe Opel si Seat.)
+Ramane problema din L8_B: randul se salveaza ca text, deci masinile vechi isi pastreaza
+forma veche a randului (de exemplu fara coloana anului).
+-->
+</body>
+</html>
